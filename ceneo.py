@@ -4,21 +4,54 @@ import requests
 # Kod EAN produktu
 ean = "113304112"
 
-# Pobranie strony produktu
+# Funkcja do znajdowania opinii
+def znajdz_opinie(soup):
+    return soup.find_all("div", class_="user-post user-post__card js_product-review")
+
+# Pobieranie i parsowanie strony produktu
 url = f"https://www.ceneo.pl/{ean}"
 response = requests.get(url)
 soup = BeautifulSoup(response.content, "html.parser")
 
-# Znalezienie wszystkich opinii na pierwszej stronie
-opinie = soup.find_all("div", class_="user-post user-post__card js_product-review")
+# Znajdowanie wszystkich opinii na pierwszej stronie
+opinie = znajdz_opinie(soup)
 
 # Iteracja po opiniach z pierwszej strony i wyświetlanie danych
 for opinia in opinie:
-    autor = opinia.find("span", class_="user-post__author-name").text
-    rekomendacja = opinia.find("span", class_="user-post__author-recomendation").text
-    gwiazdki = opinia.find("span", class_="user-post__score-count").text
-    data = opinia.find("span", class_="user-post__published").text
-    tresc = opinia.find("div", class_="user-post__text").text
+    # Zabezpieczenie przed brakiem autora
+    autor_element = opinia.find("span", class_="user-post__author-name")
+    if autor_element:
+        autor = autor_element.text
+    else:
+        autor = "Brak informacji"
+
+    # Zabezpieczenie przed brakiem rekomendacji
+    rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
+    if rekomendacja_element:
+        rekomendacja = rekomendacja_element.text
+    else:
+        rekomendacja = "Brak rekomendacji"
+
+    # Zabezpieczenie przed brakiem gwiazdek
+    gwiazdki_element = opinia.find("span", class_="user-post__score-count")
+    if gwiazdki_element:
+        gwiazdki = gwiazdki_element.text
+    else:
+        gwiazdki = "Brak informacji"
+
+    # Zabezpieczenie przed brakiem daty
+    data_element = opinia.find("span", class_="user-post__published")
+    if data_element:
+        data = data_element.text
+    else:
+        data = "Brak informacji"
+
+    # Zabezpieczenie przed brakiem treści
+    tresc_element = opinia.find("div", class_="user-post__text")
+    if tresc_element:
+        tresc = tresc_element.text
+    else:
+        tresc = "Brak treści"
 
     # Wyświetlenie danych
     print(f"Autor: {autor}")
@@ -29,20 +62,52 @@ for opinia in opinie:
     print()
 
 # Pobieranie i wyświetlanie opinii z kolejnych stron
-for i in range(2, 10):  # Pobieranie opinii z 2 do 10 strony
+for i in range(2, 11):  # Pobieranie opinii z 2 do 10 strony
     url = f"https://www.ceneo.pl/{ean}/opinie-{i}"
-    # Pobieranie i parsowanie strony
+    # Pobieranie strony
     response = requests.get(url)
+    # Parsowanie strony
     soup = BeautifulSoup(response.content, "html.parser")
 
-    # Znajdowanie i wyświetlanie opinii
-    opinie = soup.find_all("div", class_="user-post user-post__card js_product-review")
+    # Znajdowanie opinii
+    opinie = znajdz_opinie(soup)
+
+    # Wyświetlanie opinii
     for opinia in opinie:
-        autor = opinia.find("span", class_="user-post__author-name").text
-        rekomendacja = opinia.find("span", class_="user-post__author-recomendation").text
-        gwiazdki = opinia.find("span", class_="user-post__score-count").text
-        data = opinia.find("span", class_="user-post__published").text
-        tresc = opinia.find("div", class_="user-post__text").text
+        # Zabezpieczenie przed brakiem autora
+        autor_element = opinia.find("span", class_="user-post__author-name")
+        if autor_element:
+            autor = autor_element.text
+        else:
+            autor = "Brak informacji"
+
+        # Zabezpieczenie przed brakiem rekomendacji
+        rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
+        if rekomendacja_element:
+            rekomendacja = rekomendacja_element.text
+        else:
+            rekomendacja = "Brak rekomendacji"
+
+        # Zabezpieczenie przed brakiem gwiazdek
+        gwiazdki_element = opinia.find("span", class_="user-post__score-count")
+        if gwiazdki_element:
+            gwiazdki = gwiazdki_element.text
+        else:
+            gwiazdki = "Brak informacji"
+
+        # Zabezpieczenie przed brakiem daty
+        data_element = opinia.find("span", class_="user-post__published")
+        if data_element:
+            data = data_element.text
+        else:
+            data = "Brak informacji"
+
+        # Zabezpieczenie przed brakiem treści
+        tresc_element = opinia.find("div", class_="user-post__text")
+        if tresc_element:
+            tresc = tresc_element.text
+        else:
+            tresc = "Brak treści"
 
         # Wyświetlenie danych
         print(f"Autor: {autor}")
