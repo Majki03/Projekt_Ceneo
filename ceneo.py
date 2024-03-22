@@ -2,6 +2,10 @@ from bs4 import BeautifulSoup
 import requests
 import json
 import csv
+from collections import Counter
+from nltk.sentiment import SentimentIntensityAnalyzer
+from fractions import Fraction
+import re
 
 def pobierz_opinie(url):
     """
@@ -127,6 +131,93 @@ def zapisz_do_csv(opinie, nazwa_pliku):
 
             writer.writerow([autor, rekomendacja, gwiazdki, data, tresc])
 
+def _analiza_statystyczna(opinie):
+    """
+    Przeprowadza analizę statystyczną pobranych opinii.
+
+    Args:
+        opinie: Lista opinii w formacie BeautifulSoup.
+
+    Returns:
+        Słownik z wynikami analizy.
+    """
+
+    # Obliczanie średniej oceny
+    oceny = [float(Fraction(re.search(r'\d+(?:[.,]\d+)?', opinia.find("span", class_="user-post__score-count").text.replace(",", ".")).group())) for opinia in opinie]
+    if len(oceny) > 0:
+        średnia_ocena = sum(oceny) / len(oceny)
+    else:
+        return "Brak ocen do analizy"
+
+    # Dystrybucja ocen
+    dystrybucja_ocen = Counter(oceny)
+
+    # Analiza słów kluczowych
+    słowa_kluczowe = []
+    for opinia in opinie:
+        słowa_kluczowe += opinia.find("div", class_="user-post__text").text.split()
+    słowa_kluczowe = Counter(słowa_kluczowe).most_common(10)
+
+    # Wskaźnik NPS
+    nps = _oblicz_nps(opinie)
+
+    # Analiza sentymentu
+    analiza_sentymentu = _analiza_sentymentu(opinie)
+
+    return {
+        "średnia_ocena": średnia_ocena,
+        "dystrybucja_ocen": dystrybucja_ocen,
+        "słowa_kluczowe": słowa_kluczowe,
+        "nps": nps,
+        "analiza_sentymentu": analiza_sentymentu,
+    }
+
+def _oblicz_nps(opinie):
+    """
+    Oblicza NPS na podstawie opinii.
+
+    Args:
+        opinie: Lista opinii w formacie BeautifulSoup.
+
+    Returns:
+        Wartość NPS.
+    """
+
+    promotorzy = 0
+    krytycy = 0
+
+    for opinia in opinie:
+        rekomendacja = opinia.find("span", class_="user-post__author-recomendation")
+        if rekomendacja == "Polecam":
+            promotorzy += 1
+        elif rekomendacja == "":
+            continue
+        else:
+            krytycy += 1
+
+    return round((promotorzy - krytycy) / (promotorzy + krytycy) * 100, 2)
+
+def _analiza_sentymentu(opinie):
+    """
+    Przeprowadza analizę sentymentu opinii.
+
+    Args:
+        opinie: Lista opinii w formacie BeautifulSoup.
+
+    Returns:
+        Słownik z wynikami analizy sentymentu.
+    """
+
+    analizator = SentimentIntensityAnalyzer()
+    wyniki = {}
+
+    for opinia in opinie:
+        tekst = opinia.find("div", class_="user-post__text").text
+        wynik = analizator.polarity_scores(tekst)
+        wyniki[opinia] = wynik
+
+    return wyniki
+
 def main():
     # Kod EAN produktu
     ean = input("Podaj kod EAN produktu: ")
@@ -247,6 +338,9 @@ def main():
 
     # Zapis opinii do pliku CSV
     zapisz_do_csv(opinie, "opinie.csv")
+
+    # Wyświetla analizę statystyczną
+    _analiza_statystyczna(opinie)
 
 if __name__ == "__main__":
     main()
