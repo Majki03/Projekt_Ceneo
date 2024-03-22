@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
+import json
+import csv
 
 def pobierz_opinie(url):
     """
@@ -14,6 +16,116 @@ def pobierz_opinie(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     return soup.find_all("div", class_="user-post user-post__card js_product-review")
+
+def zapisz_do_json(opinie, nazwa_pliku):
+    """
+    Zapisuje opinie do pliku JSON.
+
+    Args:
+        opinie: Lista opinii w formacie BeautifulSoup.
+        nazwa_pliku: Nazwa pliku JSON.
+    """
+    with open(nazwa_pliku, "w", encoding="utf-8") as f:
+        json.dump([_konwertuj_do_json(opinia) for opinia in opinie], f, indent=4)
+
+def _konwertuj_do_json(opinia):
+    """
+    Konwertuje obiekt Tag do formatu JSON.
+
+    Args:
+        opinia: Obiekt BeautifulSoup Tag.
+
+    Returns:
+        Słownik JSON z danymi z opinii.
+    """
+    # Zabezpieczenie przed brakiem autora
+    autor = "Brak autora"
+    autor_element = opinia.find("span", class_="user-post__author-name")
+    if autor_element:
+        autor = autor_element.text
+
+    # Zabezpieczenie przed brakiem rekomendacji
+    rekomendacja = "Brak rekomendacji"
+    rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
+    if rekomendacja_element:
+        rekomendacja = rekomendacja_element.text
+
+    # Zabezpieczenie przed brakiem gwiazdek
+    gwiazdki = "Brak gwiazdek"
+    gwiazdki_element = opinia.find("span", class_="user-post__score-count")
+    if gwiazdki_element:
+        gwiazdki = gwiazdki_element.text
+
+    # Zabezpieczenie przed brakiem daty
+    data = "Brak daty"
+    data_element = opinia.find("span", class_="user-post__published")
+    if data_element:
+        data = data_element.text
+
+    # Zabezpieczenie przed brakiem treści
+    tresc = "Brak treści"
+    tresc_element = opinia.find("div", class_="user-post__text")
+    if tresc_element:
+        tresc = tresc_element.text
+
+    return {
+        "autor": autor,
+        "rekomendacja": rekomendacja,
+        "gwiazdki": gwiazdki,
+        "data": data,
+        "tresc": tresc,
+    }
+
+def zapisz_do_csv(opinie, nazwa_pliku):
+    """
+    Zapisuje opinie do pliku CSV.
+
+    Args:
+        opinie: Lista opinii w formacie BeautifulSoup.
+        nazwa_pliku: Nazwa pliku CSV.
+    """
+    with open(nazwa_pliku, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Autor", "Rekomendacja", "Liczba gwiazdek", "Data", "Treść"])
+        
+        # Pobranie danych z opinii
+        for opinia in opinie:
+            # Zabezpieczenie przed brakiem autora
+            autor_element = opinia.find("span", class_="user-post__author-name")
+            if autor_element:
+                autor = autor_element.text
+            else:
+                autor = "Brak autora"
+
+            # Zabezpieczenie przed brakiem rekomendacji
+            rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
+            if rekomendacja_element:
+                rekomendacja = rekomendacja_element.text
+            else:
+                rekomendacja = "Brak rekomendacji"
+
+            # Zabezpieczenie przed brakiem gwiazdek
+            gwiazdki_element = opinia.find("span", class_="user-post__score-count")
+            if gwiazdki_element:
+                gwiazdki = gwiazdki_element.text
+            else:
+                gwiazdki = "Brak gwiazdek"
+
+            # Zabezpieczenie przed brakiem daty
+            data_element = opinia.find("span", class_="user-post__published")
+            if data_element:
+                data = data_element.text
+            else:
+                data = "Brak daty"
+
+            # Zabezpieczenie przed brakiem treści
+            tresc_element = opinia.find("div", class_="user-post__text")
+            if tresc_element:
+                tresc = tresc_element.text
+            else:
+                tresc = "Brak treści"
+
+            writer.writerow([autor, rekomendacja, gwiazdki, data, tresc])
 
 def main():
     # Kod EAN produktu
@@ -43,7 +155,7 @@ def main():
         if autor_element:
             autor = autor_element.text
         else:
-            autor = "Brak informacji"
+            autor = "Brak autora"
 
         # Zabezpieczenie przed brakiem rekomendacji
         rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
@@ -57,14 +169,14 @@ def main():
         if gwiazdki_element:
             gwiazdki = gwiazdki_element.text
         else:
-            gwiazdki = "Brak informacji"
+            gwiazdki = "Brak gwiazdek"
 
         # Zabezpieczenie przed brakiem daty
         data_element = opinia.find("span", class_="user-post__published")
         if data_element:
             data = data_element.text
         else:
-            data = "Brak informacji"
+            data = "Brak daty"
 
         # Zabezpieczenie przed brakiem treści
         tresc_element = opinia.find("div", class_="user-post__text")
@@ -92,7 +204,7 @@ def main():
             if autor_element:
                 autor = autor_element.text
             else:
-                autor = "Brak informacji"
+                autor = "Brak autora"
 
             # Zabezpieczenie przed brakiem rekomendacji
             rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
@@ -106,14 +218,14 @@ def main():
             if gwiazdki_element:
                 gwiazdki = gwiazdki_element.text
             else:
-                gwiazdki = "Brak informacji"
+                gwiazdki = "Brak gwiazdek"
 
             # Zabezpieczenie przed brakiem daty
             data_element = opinia.find("span", class_="user-post__published")
             if data_element:
                 data = data_element.text
             else:
-                data = "Brak informacji"
+                data = "Brak daty"
 
             # Zabezpieczenie przed brakiem treści
             tresc_element = opinia.find("div", class_="user-post__text")
@@ -129,6 +241,12 @@ def main():
             print(f"Data: {data}")
             print(f"Treść: {tresc}")
             print()
+
+    # Zapis opinii do pliku JSON
+    zapisz_do_json(opinie, "opinie.json")
+
+    # Zapis opinii do pliku CSV
+    zapisz_do_csv(opinie, "opinie.csv")
 
 if __name__ == "__main__":
     main()
