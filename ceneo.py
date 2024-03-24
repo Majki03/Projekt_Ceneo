@@ -3,9 +3,9 @@ import requests
 import json
 import csv
 from collections import Counter
-from nltk.sentiment import SentimentIntensityAnalyzer
 from fractions import Fraction
 import re
+import matplotlib.pyplot as plt
 
 def pobierz_opinie(url):
     """
@@ -19,7 +19,8 @@ def pobierz_opinie(url):
     """
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
-    return soup.find_all("div", class_="user-post user-post__card js_product-review")
+    opinie = soup.find_all("div", class_="user-post user-post__card js_product-review")
+    return opinie
 
 def zapisz_do_json(opinie, nazwa_pliku):
     """
@@ -152,71 +153,32 @@ def _analiza_statystyczna(opinie):
     # Dystrybucja ocen
     dystrybucja_ocen = Counter(oceny)
 
-    # Analiza słów kluczowych
-    słowa_kluczowe = []
-    for opinia in opinie:
-        słowa_kluczowe += opinia.find("div", class_="user-post__text").text.split()
-    słowa_kluczowe = Counter(słowa_kluczowe).most_common(10)
-
-    # Wskaźnik NPS
-    nps = _oblicz_nps(opinie)
-
-    # Analiza sentymentu
-    analiza_sentymentu = _analiza_sentymentu(opinie)
-
     return {
         "średnia_ocena": średnia_ocena,
         "dystrybucja_ocen": dystrybucja_ocen,
-        "słowa_kluczowe": słowa_kluczowe,
-        "nps": nps,
-        "analiza_sentymentu": analiza_sentymentu,
     }
 
-def _oblicz_nps(opinie):
-    """
-    Oblicza NPS na podstawie opinii.
+def wyswietl_wykresy(oceny, dystrybucja_ocen):
+    # Wykres średniej oceny
+    plt.figure(figsize=(8, 6))
+    plt.bar(["Średnia ocena"], [oceny], color='skyblue')
+    plt.title("Średnia ocena")
+    plt.ylabel("Ocena")
+    plt.ylim(0, 5)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
 
-    Args:
-        opinie: Lista opinii w formacie BeautifulSoup.
-
-    Returns:
-        Wartość NPS.
-    """
-
-    promotorzy = 0
-    krytycy = 0
-
-    for opinia in opinie:
-        rekomendacja = opinia.find("span", class_="user-post__author-recomendation")
-        if rekomendacja == "Polecam":
-            promotorzy += 1
-        elif rekomendacja == "":
-            continue
-        else:
-            krytycy += 1
-
-    return round((promotorzy - krytycy) / (promotorzy + krytycy) * 100, 2)
-
-def _analiza_sentymentu(opinie):
-    """
-    Przeprowadza analizę sentymentu opinii.
-
-    Args:
-        opinie: Lista opinii w formacie BeautifulSoup.
-
-    Returns:
-        Słownik z wynikami analizy sentymentu.
-    """
-
-    analizator = SentimentIntensityAnalyzer()
-    wyniki = {}
-
-    for opinia in opinie:
-        tekst = opinia.find("div", class_="user-post__text").text
-        wynik = analizator.polarity_scores(tekst)
-        wyniki[opinia] = wynik
-
-    return wyniki
+    # Wykres dystrybucji ocen
+    plt.figure(figsize=(8, 6))
+    oceny = list(dystrybucja_ocen.keys())
+    ilosci = list(dystrybucja_ocen.values())
+    plt.bar(oceny, ilosci, color='lightgreen')
+    plt.title("Dystrybucja ocen")
+    plt.xlabel("Ocena")
+    plt.ylabel("Ilość opinii")
+    plt.xticks(range(1, 6))
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
 
 def main():
     # Kod EAN produktu
@@ -339,8 +301,14 @@ def main():
     # Zapis opinii do pliku CSV
     zapisz_do_csv(opinie, "opinie.csv")
 
-    # Wyświetla analizę statystyczną
-    _analiza_statystyczna(opinie)
+    # Wywołanie analizy statystycznej
+    wyniki_statystyczne = _analiza_statystyczna(opinie)
+
+    # Wyświetlenie wykresów
+    if "dystrybucja_ocen" in wyniki_statystyczne:
+        wyswietl_wykresy(wyniki_statystyczne["średnia_ocena"], wyniki_statystyczne["dystrybucja_ocen"])
+    else:
+        print("Brak danych do wyświetlenia wykresów.")
 
 if __name__ == "__main__":
     main()
