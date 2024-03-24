@@ -304,6 +304,10 @@ def main():
     # Wywołanie analizy statystycznej
     wyniki_statystyczne = _analiza_statystyczna(opinie)
 
+    # Zapis wyników analizy statystycznej do pliku JSON
+    with open("wyniki_statystyczne.json", "w", encoding="utf-8") as f:
+        json.dump(wyniki_statystyczne, f, indent=4)
+
     # Wyświetlenie wykresów
     if "dystrybucja_ocen" in wyniki_statystyczne:
         wyswietl_wykresy(wyniki_statystyczne["średnia_ocena"], wyniki_statystyczne["dystrybucja_ocen"])
