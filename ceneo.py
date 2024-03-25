@@ -180,9 +180,28 @@ def wyswietl_wykresy(oceny, dystrybucja_ocen):
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
 
+class Produkt:
+    def __init__(self, ean):
+        self.ean = ean
+        self.opinie = []
+
+    def dodaj_opinie(self, opinie):
+        self.opinie.extend(opinie)
+
+class Opinia:
+    def __init__(self, autor, rekomendacja, gwiazdki, data, tresc):
+        self.autor = autor
+        self.rekomendacja = rekomendacja
+        self.gwiazdki = gwiazdki
+        self.data = data
+        self.tresc = tresc
+
 def main():
     # Kod EAN produktu
     ean = input("Podaj kod EAN produktu: ")
+
+    # Tworzenie obiektu produktu
+    produkt = Produkt(ean)
 
     # Pobieranie i parsowanie strony produktu
     url = f"https://www.ceneo.pl/{ean}"
@@ -203,42 +222,29 @@ def main():
 
     # Iteracja po opiniach z pierwszej strony i wyświetlanie danych
     for opinia in opinie:
-        # Zabezpieczenie przed brakiem autora
-        autor_element = opinia.find("span", class_="user-post__author-name")
-        if autor_element:
-            autor = autor_element.text
-        else:
+        autor = opinia.find("span", class_="user-post__author-name").text.strip()
+        rekomendacja = opinia.find("span", class_="user-post__author-recomendation").text.strip()
+        gwiazdki = opinia.find("span", class_="user-post__score-count").text.strip()
+        data = opinia.find("span", class_="user-post__published").text.strip()
+        tresc = opinia.find("div", class_="user-post__text").text.strip()
+
+        # Uwzględnienie braku danych
+        if not autor:
             autor = "Brak autora"
-
-        # Zabezpieczenie przed brakiem rekomendacji
-        rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
-        if rekomendacja_element:
-            rekomendacja = rekomendacja_element.text
-        else:
+        if not rekomendacja:
             rekomendacja = "Brak rekomendacji"
-
-        # Zabezpieczenie przed brakiem gwiazdek
-        gwiazdki_element = opinia.find("span", class_="user-post__score-count")
-        if gwiazdki_element:
-            gwiazdki = gwiazdki_element.text
-        else:
+        if not gwiazdki:
             gwiazdki = "Brak gwiazdek"
-
-        # Zabezpieczenie przed brakiem daty
-        data_element = opinia.find("span", class_="user-post__published")
-        if data_element:
-            data = data_element.text
-        else:
+        if not data:
             data = "Brak daty"
-
-        # Zabezpieczenie przed brakiem treści
-        tresc_element = opinia.find("div", class_="user-post__text")
-        if tresc_element:
-            tresc = tresc_element.text
-        else:
+        if not tresc:
             tresc = "Brak treści"
 
-        # Wyświetlenie danych
+        # Tworzenie obiektu opinii
+        nowa_opinia = Opinia(autor, rekomendacja, gwiazdki, data, tresc)
+        # Dodawanie opinii do produktu
+        produkt.dodaj_opinie([nowa_opinia])
+
         print(f"Autor: {autor}")
         print(f"Rekomendacja: {rekomendacja}")
         print(f"Liczba gwiazdek: {gwiazdki}")
@@ -246,54 +252,38 @@ def main():
         print(f"Treść: {tresc}")
         print()
 
-    # Pobieranie opinii z kolejnych stron
     for i in range(2, liczba_stron):
         opinie += pobierz_opinie(f"{url}/opinie-{i}")
 
-        # Wyświetlanie opinii
         for opinia in opinie:
-            # Zabezpieczenie przed brakiem autora
-            autor_element = opinia.find("span", class_="user-post__author-name")
-            if autor_element:
-                autor = autor_element.text
-            else:
+            autor = opinia.find("span", class_="user-post__author-name").text.strip()
+            rekomendacja = opinia.find("span", class_="user-post__author-recomendation").text.strip()
+            gwiazdki = opinia.find("span", class_="user-post__score-count").text.strip()
+            data = opinia.find("span", class_="user-post__published").text.strip()
+            tresc = opinia.find("div", class_="user-post__text").text.strip()
+
+            # Uwzględnienie braku danych
+            if not autor:
                 autor = "Brak autora"
-
-            # Zabezpieczenie przed brakiem rekomendacji
-            rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
-            if rekomendacja_element:
-                rekomendacja = rekomendacja_element.text
-            else:
+            if not rekomendacja:
                 rekomendacja = "Brak rekomendacji"
-
-            # Zabezpieczenie przed brakiem gwiazdek
-            gwiazdki_element = opinia.find("span", class_="user-post__score-count")
-            if gwiazdki_element:
-                gwiazdki = gwiazdki_element.text
-            else:
+            if not gwiazdki:
                 gwiazdki = "Brak gwiazdek"
-
-            # Zabezpieczenie przed brakiem daty
-            data_element = opinia.find("span", class_="user-post__published")
-            if data_element:
-                data = data_element.text
-            else:
+            if not data:
                 data = "Brak daty"
-
-            # Zabezpieczenie przed brakiem treści
-            tresc_element = opinia.find("div", class_="user-post__text")
-            if tresc_element:
-                tresc = tresc_element.text
-            else:
+            if not tresc:
                 tresc = "Brak treści"
 
-            # Wyświetlenie danych
+            # Tworzenie obiektu opinii
+            nowa_opinia = Opinia(autor, rekomendacja, gwiazdki, data, tresc)
+            # Dodawanie opinii do produktu
+            produkt.dodaj_opinie([nowa_opinia])
+
             print(f"Autor: {autor}")
             print(f"Rekomendacja: {rekomendacja}")
             print(f"Liczba gwiazdek: {gwiazdki}")
             print(f"Data: {data}")
             print(f"Treść: {tresc}")
-            print()
 
     # Zapis opinii do pliku JSON
     zapisz_do_json(opinie, "opinie.json")
