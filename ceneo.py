@@ -22,6 +22,32 @@ def pobierz_opinie(url):
     opinie = soup.find_all("div", class_="user-post user-post__card js_product-review")
     return opinie
 
+def ekstrakcja_opinii_po_ean(ean):
+    """
+    Ekstrahuje opinie na podstawie kodu EAN.
+
+    Args:
+        ean: Kod EAN produktu.
+
+    Returns:
+        Lista opinii na temat produktu.
+    """
+    url = f"https://www.ceneo.pl/{ean}"
+    opinie = pobierz_opinie(url)
+
+    # Iterowanie po stronach do momentu powtórzenia pierwszej strony
+    liczba_stron = 1
+    while opinie:
+        liczba_stron += 1
+        opinie.extend(pobierz_opinie(f"{url}/opinie-{liczba_stron}"))
+        if opinie == pobierz_opinie(url):
+            break
+    
+    if opinie:
+        zapisz_do_json(opinie, "opinie.json")
+
+    return opinie
+
 def zapisz_do_json(opinie, nazwa_pliku):
     """
     Zapisuje opinie do pliku JSON.
@@ -43,42 +69,61 @@ def _konwertuj_do_json(opinia):
     Returns:
         Słownik JSON z danymi z opinii.
     """
-    # Zabezpieczenie przed brakiem autora
-    autor = "Brak autora"
+    id_opinii_element = opinia.get("data-entry-id")
+    id_opinii = id_opinii_element if id_opinii_element else "Brak ID"
+
     autor_element = opinia.find("span", class_="user-post__author-name")
-    if autor_element:
-        autor = autor_element.text
+    autor = autor_element.text.strip() if autor_element else "Brak autora"
 
-    # Zabezpieczenie przed brakiem rekomendacji
-    rekomendacja = "Brak rekomendacji"
     rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
-    if rekomendacja_element:
-        rekomendacja = rekomendacja_element.text
+    rekomendacja = rekomendacja_element.text.strip() if rekomendacja_element else "Brak rekomendacji"
 
-    # Zabezpieczenie przed brakiem gwiazdek
-    gwiazdki = "Brak gwiazdek"
     gwiazdki_element = opinia.find("span", class_="user-post__score-count")
-    if gwiazdki_element:
-        gwiazdki = gwiazdki_element.text
+    gwiazdki = gwiazdki_element.text.strip() if gwiazdki_element else "Brak gwiazdek"
+    
+    data_wystawienia_element = opinia.find_all("time", {"datetime": True})
+    data_wystawienia = data_wystawienia_element[0].text.strip() if data_wystawienia_element else "Brak danych"
 
-    # Zabezpieczenie przed brakiem daty
-    data = "Brak daty"
-    data_element = opinia.find("span", class_="user-post__published")
-    if data_element:
-        data = data_element.text
+    czas_od_zakupu = "Brak danych"
+    if len(data_wystawienia_element) > 1:
+        czas_od_zakupu = data_wystawienia_element[1].text.strip()
 
-    # Zabezpieczenie przed brakiem treści
-    tresc = "Brak treści"
+    potwierdzony_zakup = "Nie zakupiono"
+    if czas_od_zakupu != "Brak danych":
+        potwierdzony_zakup = "Potwierdzone zakupem"
+
+    pomocna_element = opinia.find("button", class_="vote-yes js_product-review-vote js_vote-yes")
+    pomocna = pomocna_element.text.strip() if pomocna_element else "Brak danych"
+
+    nie_pomocna_element = opinia.find("button", class_="vote-no js_product-review-vote js_vote-no")
+    nie_pomocna = nie_pomocna_element.text.strip() if nie_pomocna_element else "Brak danych"
+
     tresc_element = opinia.find("div", class_="user-post__text")
-    if tresc_element:
-        tresc = tresc_element.text
+    tresc = tresc_element.text.strip() if tresc_element else "Brak treści"
+
+    wady_element = opinia.find("div", class_="review-feature__title--negatives")
+    wady = []
+    if wady_element:
+        wady = [wada.text.strip() for wada in wady_element.find_next_sibling("div", class_="review-feature__item")]
+
+    zalety_element = opinia.find("div", class_="review-feature__title--positives")
+    zalety = []
+    if zalety_element:
+        zalety = [zaleta.text.strip() for zaleta in zalety_element.find_next_sibling("div", class_="review-feature__item")]
 
     return {
+        "id": id_opinii,
         "autor": autor,
         "rekomendacja": rekomendacja,
         "gwiazdki": gwiazdki,
-        "data": data,
+        "data_wystawienia": data_wystawienia,
+        "czas_od_zakupu": czas_od_zakupu,
+        "potwierdzony_zakup": potwierdzony_zakup,
+        "pomocna": pomocna,
+        "nie_pomocna": nie_pomocna,
         "tresc": tresc,
+        "wady": wady,
+        "zalety": zalety,
     }
 
 def zapisz_do_csv(opinie, nazwa_pliku):
@@ -91,46 +136,69 @@ def zapisz_do_csv(opinie, nazwa_pliku):
     """
     with open(nazwa_pliku, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["Autor", "Rekomendacja", "Liczba gwiazdek", "Data", "Treść"])
+        writer.writerow(["ID", "Autor", "Rekomendacja", "Liczba gwiazdek", "Data wystawienia", "Czas od zakupu", "Potwierdzony zakup", "Pomocna", "Niepomocna", "Treść", "Wady", "Zalety"])
         
         # Pobranie danych z opinii
         for opinia in opinie:
+            # Zabezpieczenie przed brakiem ID
+            id_opinii = opinia.get("data-entry-id", "Brak ID")
+
             # Zabezpieczenie przed brakiem autora
             autor_element = opinia.find("span", class_="user-post__author-name")
-            if autor_element:
-                autor = autor_element.text
-            else:
-                autor = "Brak autora"
+            autor = autor_element.text.strip() if autor_element else "Brak autora"
 
             # Zabezpieczenie przed brakiem rekomendacji
             rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
-            if rekomendacja_element:
-                rekomendacja = rekomendacja_element.text
-            else:
-                rekomendacja = "Brak rekomendacji"
+            rekomendacja = rekomendacja_element.text.strip() if rekomendacja_element else "Brak rekomendacji"
 
             # Zabezpieczenie przed brakiem gwiazdek
             gwiazdki_element = opinia.find("span", class_="user-post__score-count")
-            if gwiazdki_element:
-                gwiazdki = gwiazdki_element.text
-            else:
-                gwiazdki = "Brak gwiazdek"
+            gwiazdki = gwiazdki_element.text.strip() if gwiazdki_element else "Brak gwiazdek"
 
             # Zabezpieczenie przed brakiem daty
             data_element = opinia.find("span", class_="user-post__published")
-            if data_element:
-                data = data_element.text
-            else:
-                data = "Brak daty"
+            data = data_element.text.strip() if data_element else "Brak daty"
+
+            # Zabezpieczenie przed brakiem daty wystawienia i czasu od zakupu
+            czas_od_zakupu_element = opinia.find_all("time", {"datetime": True})
+            data_wystawienia = "Brak danych"
+            czas_od_zakupu = "Brak danych"
+            if len(czas_od_zakupu_element) > 1:
+                data_wystawienia = czas_od_zakupu_element[0].text.strip()
+                czas_od_zakupu = czas_od_zakupu_element[1].text.strip()
+
+            # Potwierdzenie zakupu
+            potwierdzony_zakup = "Nie zakupiono"
+            if czas_od_zakupu != "Brak danych":
+                potwierdzony_zakup = "Potwierdzone zakupem"
+
+            # Punktacja pomocna i niepomocna
+            pomocna_element = opinia.find("button", class_="vote-yes js_product-review-vote js_vote-yes")
+            pomocna = pomocna_element.text.strip() if pomocna_element else "Brak danych"
+            nie_pomocna_element = opinia.find("button", class_="vote-no js_product-review-vote js_vote-no")
+            nie_pomocna = nie_pomocna_element.text.strip() if nie_pomocna_element else "Brak danych"
 
             # Zabezpieczenie przed brakiem treści
             tresc_element = opinia.find("div", class_="user-post__text")
-            if tresc_element:
-                tresc = tresc_element.text
-            else:
-                tresc = "Brak treści"
+            tresc = tresc_element.text.strip() if tresc_element else "Brak treści"
 
-            writer.writerow([autor, rekomendacja, gwiazdki, data, tresc])
+            # Wady
+            wady_element = opinia.find("div", class_="review-feature__title--negatives")
+            wady = []
+            if wady_element:
+                for item in wady_element.find_all_next("div", class_="review-feature__item"):
+                    wady.append(item.text.strip())
+            wady_str = ", ".join(wady)
+
+            # Zalety
+            zalety_element = opinia.find("div", class_="review-feature__title--positives")
+            zalety = []
+            if zalety_element:
+                for item in zalety_element.find_all_next("div", class_="review-feature__item"):
+                    zalety.append(item.text.strip())
+            zalety_str = ", ".join(zalety)
+
+            writer.writerow([id_opinii, autor, rekomendacja, gwiazdki, data, data_wystawienia, czas_od_zakupu, potwierdzony_zakup, pomocna, nie_pomocna, tresc, wady_str, zalety_str])
 
 def _analiza_statystyczna(opinie):
     """
@@ -189,12 +257,19 @@ class Produkt:
         self.opinie.extend(opinie)
 
 class Opinia:
-    def __init__(self, autor, rekomendacja, gwiazdki, data, tresc):
+    def __init__(self, id_opinii, autor, rekomendacja, gwiazdki, potwierdzony_zakup, data_wystawienia, czas_od_zakupu, pomocna, nie_pomocna, tresc, wady, zalety):
+        self.id_opinii = id_opinii
         self.autor = autor
         self.rekomendacja = rekomendacja
         self.gwiazdki = gwiazdki
-        self.data = data
+        self.potwierdzony_zakup = potwierdzony_zakup
+        self.data_wystawienia = data_wystawienia
+        self.czas_od_zakupu = czas_od_zakupu
+        self.pomocna = pomocna
+        self.nie_pomocna = nie_pomocna
         self.tresc = tresc
+        self.wady = wady
+        self.zalety = zalety
 
 def main():
     # Kod EAN produktu
@@ -222,68 +297,149 @@ def main():
 
     # Iteracja po opiniach z pierwszej strony i wyświetlanie danych
     for opinia in opinie:
+        id_opinii = opinia.get("data-entry-id")
         autor = opinia.find("span", class_="user-post__author-name").text.strip()
-        rekomendacja = opinia.find("span", class_="user-post__author-recomendation").text.strip()
+        rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
+        rekomendacja = rekomendacja_element.text.strip() if rekomendacja_element is not None else "Brak rekomendacji"
         gwiazdki = opinia.find("span", class_="user-post__score-count").text.strip()
-        data = opinia.find("span", class_="user-post__published").text.strip()
+        potwierdzony_zakup = "Nie zakupiono"
+        data_wystawienia = opinia.find("time", {"datetime": True})
+        czasy_elementy = opinia.find_all("time", {"datetime": True})
+        pomocna_element = opinia.find("button", class_="vote-yes js_product-review-vote js_vote-yes")
+        pomocna = pomocna_element.text.strip() if pomocna_element is not None else "Brak danych"
+        nie_pomocna_element = opinia.find("button", class_="vote-no js_product-review-vote js_vote-no")
+        nie_pomocna = nie_pomocna_element.text.strip() if nie_pomocna_element is not None else "Brak danych"
         tresc = opinia.find("div", class_="user-post__text").text.strip()
+        wady_element = opinia.find("div", class_="review-feature__title--negatives")
+        wady = []
+        zalety_element = opinia.find("div", class_="review-feature__title--positives")
+        zalety = []
 
         # Uwzględnienie braku danych
+        if not id_opinii:
+            id_opinii = "Brak ID"
         if not autor:
             autor = "Brak autora"
         if not rekomendacja:
             rekomendacja = "Brak rekomendacji"
         if not gwiazdki:
             gwiazdki = "Brak gwiazdek"
-        if not data:
-            data = "Brak daty"
+        if czasy_elementy:
+            potwierdzony_zakup = "Potwierdzenie zakupu"
+        if not data_wystawienia:
+            data_wystawienia = "Brak daty wystawienia opinii"
+        if len(czasy_elementy) > 1:
+            czas_od_zakupu_element = czasy_elementy[1]
+            czas_od_zakupu = czas_od_zakupu_element.text.strip() if czas_od_zakupu_element else "Brak danych"
+        else:
+            czas_od_zakupu = "Brak danych"
+        if not pomocna:
+            pomocna = "Brak liczby pozytywnych reakcji"
+        if not nie_pomocna:
+            nie_pomocna = "Brak liczby negatywnych reakcji"
         if not tresc:
             tresc = "Brak treści"
+        if wady_element:
+            wady = [wada.text.strip() for wada in wady_element.find_next_sibling("div", class_="review-feature__item")]
+        if not wady_element:
+            wady_element = "Brak wad"
+        if zalety_element:
+            zalety = [zaleta.text.strip() for zaleta in zalety_element.find_next_sibling("div", class_="review-feature__item")]
+        if not zalety_element:
+            zalety_element = "Brak zalet"
 
         # Tworzenie obiektu opinii
-        nowa_opinia = Opinia(autor, rekomendacja, gwiazdki, data, tresc)
+        nowa_opinia = Opinia(id_opinii, autor, rekomendacja, gwiazdki, potwierdzony_zakup, data_wystawienia, czas_od_zakupu, pomocna, nie_pomocna, tresc, wady, zalety)
         # Dodawanie opinii do produktu
         produkt.dodaj_opinie([nowa_opinia])
 
+        print(f"ID: {id_opinii}")
         print(f"Autor: {autor}")
         print(f"Rekomendacja: {rekomendacja}")
         print(f"Liczba gwiazdek: {gwiazdki}")
-        print(f"Data: {data}")
+        print(f"{potwierdzony_zakup}")
+        print(f"Data wystawienia opinii: {data_wystawienia}")
+        print(f"Data zakupu: {czas_od_zakupu}")
+        print(f"Liczba pozytywnych reakcji: {pomocna}")
+        print(f"Liczba neagtywnych reakcji: {nie_pomocna}")
         print(f"Treść: {tresc}")
+        print(f"Wady: {wady}")
+        print(f"Zalety: {zalety}")
         print()
 
     for i in range(2, liczba_stron):
         opinie += pobierz_opinie(f"{url}/opinie-{i}")
 
         for opinia in opinie:
+            id_opinii = opinia.get("data-entry-id")
             autor = opinia.find("span", class_="user-post__author-name").text.strip()
-            rekomendacja = opinia.find("span", class_="user-post__author-recomendation").text.strip()
+            rekomendacja_element = opinia.find("span", class_="user-post__author-recomendation")
+            rekomendacja = rekomendacja_element.text.strip() if rekomendacja_element is not None else "Brak rekomendacji"
             gwiazdki = opinia.find("span", class_="user-post__score-count").text.strip()
-            data = opinia.find("span", class_="user-post__published").text.strip()
+            potwierdzony_zakup = "Nie zakupiono"
+            data_wystawienia = opinia.find("time", {"datetime": True})
+            czasy_elementy = opinia.find_all("time", {"datetime": True})
+            pomocna_element = opinia.find("button", class_="vote-yes js_product-review-vote js_vote-yes")
+            pomocna = pomocna_element.text.strip() if pomocna_element is not None else "Brak danych"
+            nie_pomocna_element = opinia.find("button", class_="vote-no js_product-review-vote js_vote-no")
+            nie_pomocna = nie_pomocna_element.text.strip() if nie_pomocna_element is not None else "Brak danych"
             tresc = opinia.find("div", class_="user-post__text").text.strip()
+            wady_element = opinia.find("div", class_="review-feature__title--negatives")
+            wady = []
+            zalety_element = opinia.find("div", class_="review-feature__title--positives")
+            zalety = []
 
             # Uwzględnienie braku danych
+            if not id_opinii:
+                id_opinii = "Brak ID"
             if not autor:
                 autor = "Brak autora"
             if not rekomendacja:
                 rekomendacja = "Brak rekomendacji"
             if not gwiazdki:
                 gwiazdki = "Brak gwiazdek"
-            if not data:
-                data = "Brak daty"
+            if czasy_elementy:
+                potwierdzony_zakup = "Potwierdzenie zakupu"
+            if not data_wystawienia:
+                data_wystawienia = "Brak daty wystawienia opinii"
+            if len(czasy_elementy) > 1:
+                czas_od_zakupu_element = czasy_elementy[1]
+                czas_od_zakupu = czas_od_zakupu_element.text.strip() if czas_od_zakupu_element else "Brak danych"
+            else:
+                czas_od_zakupu = "Brak danych"
+            if not pomocna:
+                pomocna = "Brak liczby pozytywnych reakcji"
+            if not nie_pomocna:
+                nie_pomocna = "Brak liczby negatywnych reakcji"
             if not tresc:
                 tresc = "Brak treści"
+            if wady_element:
+                wady = [wada.text.strip() for wada in wady_element.find_next_sibling("div", class_="review-feature__item")]
+            if not wady_element:
+                wady_element = "Brak wad"
+            if zalety_element:
+                zalety = [zaleta.text.strip() for zaleta in zalety_element.find_next_sibling("div", class_="review-feature__item")]
+            if not zalety_element:
+                zalety_element = "Brak zalet"
 
             # Tworzenie obiektu opinii
-            nowa_opinia = Opinia(autor, rekomendacja, gwiazdki, data, tresc)
+            nowa_opinia = Opinia(id_opinii, autor, rekomendacja, gwiazdki, potwierdzony_zakup, data_wystawienia, czas_od_zakupu, pomocna, nie_pomocna, tresc, wady, zalety)
             # Dodawanie opinii do produktu
             produkt.dodaj_opinie([nowa_opinia])
 
+            print(f"ID: {id_opinii}")
             print(f"Autor: {autor}")
             print(f"Rekomendacja: {rekomendacja}")
             print(f"Liczba gwiazdek: {gwiazdki}")
-            print(f"Data: {data}")
+            print(f"{potwierdzony_zakup}")
+            print(f"Data wystawienia opinii: {data_wystawienia}")
+            print(f"Data zakupu: {czas_od_zakupu}")
+            print(f"Liczba pozytywnych reakcji: {pomocna}")
+            print(f"Liczba neagtywnych reakcji: {nie_pomocna}")
             print(f"Treść: {tresc}")
+            print(f"Wady: {wady}")
+            print(f"Zalety: {zalety}")
+            print()
 
     # Zapis opinii do pliku JSON
     zapisz_do_json(opinie, "opinie.json")

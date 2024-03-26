@@ -1,42 +1,46 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, request
+from test import main, ekstrakcja_opinii_po_ean
 import json
 
 app = Flask(__name__, template_folder=".")
 
 @app.route("/")
 def index():
-    # Pobranie wyników analizy
-    with open("wyniki_statystyczne.json", "r") as f:
-        wyniki_statystyczne = json.load(f)
+    return render_template("index.html")
 
-    with open("opinie.json", "r") as f:
-        opinie = json.load(f)
+@app.route("/ekstrakcja", methods=['GET', 'POST'])
+def ekstrakcja_opinii():
+    if request.method == 'POST':
+        try:
+            ean = request.form["ean"]
+            if not ean:  # Sprawdzenie czy pole ean nie jest puste
+                raise KeyError
+            opinie = ekstrakcja_opinii_po_ean(ean)
+            main(ean)
+            return render_template("ekstrakcja.html", opinie=opinie)
+        except KeyError:
+            return render_template("ekstrakcja.html", error="Błędny kod EAN")
+    else:
+        return render_template("ekstrakcja.html")
     
-    # Przekazanie liczby opinii do kontekstu szablonu
-    liczba_opinii = len(opinie)
+def main_route():
+    ean = request.args.get("ean")
+    if ean:
+        main(ean)
 
-    return render_template("index.html", wyniki=wyniki_statystyczne, liczba_opinii=liczba_opinii)
-
-@app.route("/opinie")
-def opinie():
+    return render_template("main.html")
+    
+@app.route("/ekstrakcja_opinii", methods=['POST'])
+def ekstrakcja():
     # Pobranie opinii
     with open("opinie.json", "r") as f:
         opinie = json.load(f)
 
-    return render_template("opinie.html", opinie=opinie)
+    return render_template("ekstrakcja_opinii.html", opinie=opinie)
 
-@app.route("/opinia/<int:id>")
-def opinia(id):
-    # Pobranie opinii o konkretnym identyfikatorze
-    with open("opinie.json", "r") as f:
-        opinie = json.load(f)
-
-    # Sprawdzenie czy istnieje opinia o podanym identyfikatorze
-    if id >= 0 and id < len(opinie):
-        opinia = opinie[id]
-        return render_template("opinia.html", opinia=opinia)
-    else:
-        return "Opinia nie istnieje"
+@app.route("/o_autorze")
+def about():
+    return render_template("o_autorze.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

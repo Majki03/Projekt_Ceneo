@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Opinie</title>
+</head>
+<body>
+    <h1>Opinie</h1>
+    
+    <form action="/ekstrakcja" method="POST">
+        <input type="text" name="ean" placeholder="Podaj kod EAN">
+        <button type="submit">Pobierz opinie</button>
+    </form>
+    
+    {% if error %}
+    <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Opinie</title>
+</head>
+<body>
+    <h1>Opinie</h1>
+    
+    <ul>
+        {% for opinia in opinie %}
+        <li>
+            <h3>{{ opinia.autor }}</h3>
+            <p><strong>ID:</strong> {{ opinia.id_opinii }}</p>
+            <p><strong>Rekomendacja:</strong> {{ opinia.rekomendacja }}</p>
+            <p><strong>Liczba gwiazdek:</strong> {{ opinia.gwiazdki }}</p>
+            <p><strong>Data wystawienia:</strong> {{ opinia.data_wystawienia }}</p>
+            <p><strong>Czas od zakupu:</strong> {{ opinia.czas_od_zakupu }}</p>
+            <p><strong>Potwierdzony zakup:</strong> {{ opinia.potwierdzony_zakup }}</p>
+            <p><strong>Liczba pozytywnych reakcji:</strong> {{ opinia.pomocna }}</p>
+            <p><strong>Liczba negatywnych reakcji:</strong> {{ opinia.nie_pomocna }}</p>
+            <p><strong>Treść:</strong> {{ opinia.tresc }}</p>
+            <p><strong>Wady:</strong> {{ opinia.wady }}</p>
+            <p><strong>Zalety:</strong> {{ opinia.zalety }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
