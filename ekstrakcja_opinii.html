@@ -3,27 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <title>Opinie</title>
+    <script src="https://cdn.jsdelivr.net/npm/tablesort@5.2.1/dist/tablesort.min.js"></script>
+    <style>
+        th {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>Opinie</h1>
     
-    <ul>
-        {% for opinia in opinie %}
-        <li>
-            <h3>{{ opinia.autor }}</h3>
-            <p><strong>ID:</strong> {{ opinia.id_opinii }}</p>
-            <p><strong>Rekomendacja:</strong> {{ opinia.rekomendacja }}</p>
-            <p><strong>Liczba gwiazdek:</strong> {{ opinia.gwiazdki }}</p>
-            <p><strong>Data wystawienia:</strong> {{ opinia.data_wystawienia }}</p>
-            <p><strong>Czas od zakupu:</strong> {{ opinia.czas_od_zakupu }}</p>
-            <p><strong>Potwierdzony zakup:</strong> {{ opinia.potwierdzony_zakup }}</p>
-            <p><strong>Liczba pozytywnych reakcji:</strong> {{ opinia.pomocna }}</p>
-            <p><strong>Liczba negatywnych reakcji:</strong> {{ opinia.nie_pomocna }}</p>
-            <p><strong>Treść:</strong> {{ opinia.tresc }}</p>
-            <p><strong>Wady:</strong> {{ opinia.wady }}</p>
-            <p><strong>Zalety:</strong> {{ opinia.zalety }}</p>
-        </li>
-        {% endfor %}
-    </ul>
-</body>
+    <script>
+        function submitFormToJson() {
+            var opinieInput = document.getElementById("opinie-input").value;
+            var opinieJson = JSON.stringify(opinieInput);
+            document.getElementById("opinie-json-input").value = opinieJson;
+            document.getElementById("json-form").submit();
+            // Dodaj komunikat oczekiwania
+            document.getElementById("message").innerText = "Trwa zapisywanie do JSON...";
+        }
+    
+        function submitFormToCsv() {
+            var opinieInput = document.getElementById("opinie-input").value;
+            var opinieJson = JSON.stringify(opinieInput);
+            document.getElementById("opinie-json-input").value = opinieJson;
+            document.getElementById("csv-form").submit();
+            // Dodaj komunikat oczekiwania
+            document.getElementById("message").innerText = "Trwa zapisywanie do CSV...";
+        }
+    </script>
+    
+    <form id="json-form" action="{{ url_for('zapisz_do_json_view') }}" method="post" style="display: none;">
+        <input type="hidden" name="opinie" id="opinie-json-input">
+    </form>
+    <form id="csv-form" action="{{ url_for('zapisz_do_csv_view') }}" method="post" style="display: none;">
+        <input type="hidden" name="opinie" id="opinie-json-input">
+    </form>
+    
+    <button type="button" onclick="submitFormToJson()">Zapisz do JSON</button>
+    <button type="button" onclick="submitFormToCsv()">Zapisz do CSV</button>
+
+    <form action="/wykresy" method="POST">
+        <button type="submit">Przejdź do wykresów</button>
+    </form>
+
+    <table id="opinie-table">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">ID</th>
+                <th onclick="sortTable(1)">Autor</th>
+                <th onclick="sortTable(2)">Rekomendacja</th>
+                <th onclick="sortTable(3)">Liczba gwiazdek</th>
+                <th onclick="sortTable(4)">Data wystawienia</th>
+                <th onclick="sortTable(5)">Czas od zakupu</th>
+                <th onclick="sortTable(6)">Potwierdzony zakup</th>
+                <th onclick="sortTable(7)">Pomocna</th>
+                <th onclick="sortTable(8)">Niepomocna</th>
+                <th onclick="sortTable(9)">Treść</th>
+                <th onclick="sortTable(10)">Wady</th>
+                <th onclick="sortTable(11)">Zalety</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for opinia in opinie %}
+            <tr>
+                <td>{{ opinia.id_opinii }}</td>
+                <td>{{ opinia.autor }}</td>
+                <td>{{ opinia.rekomendacja }}</td>
+                <td>{{ opinia.gwiazdki }}</td>
+                <td>{{ opinia.data_wystawienia }}</td>
+                <td>{{ opinia.czas_od_zakupu }}</td>
+                <td>{{ opinia.potwierdzony_zakup }}</td>
+                <td>{{ opinia.pomocna }}</td>
+                <td>{{ opinia.nie_pomocna }}</td>
+                <td>{{ opinia.tresc }}</td>
+                <td>{{ opinia.wady }}</td>
+                <td>{{ opinia.zalety }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function sortTable(columnIndex) {
+            var table = document.getElementById("opinie-table");
+            var rows = Array.from(table.getElementsByTagName("tr")).slice(1); // Skip the header row
+            var ascending = true;
+
+            rows.sort((a, b) => {
+                var aValue = a.getElementsByTagName("td")[columnIndex].innerText;
+                var bValue = b.getElementsByTagName("td")[columnIndex].innerText;
+
+                // Convert string to numbers for numerical columns
+                if (!isNaN(aValue) && !isNaN(bValue)) {
+                    aValue = parseFloat(aValue);
+                    bValue = parseFloat(bValue);
+                }
+
+                if (aValue > bValue) return ascending ? 1 : -1;
+                if (aValue < bValue) return ascending ? -1 : 1;
+                return 0;
+            });
+
+            // Reverse order if already sorted in descending order
+            if (!ascending) rows.reverse();
+
+            // Remove existing rows from the table
+            rows.forEach(row => table.tBodies[0].appendChild(row));
+
+            ascending = !ascending;
+        }
+    </script>
 </html>

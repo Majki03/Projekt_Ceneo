@@ -7,13 +7,22 @@
 <body>
     <h1>Opinie</h1>
     
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
     <form action="/ekstrakcja" method="POST">
         <input type="text" name="ean" placeholder="Podaj kod EAN">
         <button type="submit">Pobierz opinie</button>
     </form>
-    
-    {% if error %}
-    <p>{{ error }}</p>
-    {% endif %}
+    <form action="/ekstrakcja_opinii" method="POST">
+        <button type="submit">Przejdź do opinii</button>
+    </form>
 </body>
 </html>

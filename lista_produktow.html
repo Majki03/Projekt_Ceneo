@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Produktów</title>
+</head>
+<body>
+    <h1>Lista Produktów</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa Produktu</th>
+                <th>Liczba Opinii</th>
+                <th>Liczba Wad</th>
+                <th>Liczba Zalet</th>
+                <th>Średnia Ocena</th>
+                <th>Pobierz Opinie</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produkt in produkty %}
+            <tr>
+                <td><a href="{{ produkt.url }}" target="_blank">{{ produkt.nazwa }}</a></td>
+                <td>{{ produkt.liczba_opinii }}</td>
+                <td>{{ produkt.liczba_wad }}</td>
+                <td>{{ produkt.liczba_zalet }}</td>
+                <td>{{ produkt.srednia_ocena }}</td>
+                <td>
+                    <form action="{{ url_for('pobierz_opinie', ean=produkt.ean) }}" method="post">
+                        <button type="submit" name="format" value="csv">Pobierz CSV</button>
+                        <button type="submit" name="format" value="json">Pobierz JSON</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="/">Powrót do strony głównej</a>
+</body>
+</html>
