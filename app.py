@@ -1,15 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from ceneo import ekstrakcja_opinii_po_ean, _analiza_statystyczna
+from ceneo import ekstrakcja_opinii_po_ean, _analiza_statystyczna, pobierz_opinie, wyswietl_wykresy
 import json
 import csv
-import re
-from fractions import Fraction
-import matplotlib.pyplot as plt
-from collections import Counter
-import os
 
 app = Flask(__name__, template_folder=".")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
+def ekstrakcja_opinii_po_ean(ean, zapisz_wykresy=False):
+    """
+    Ekstrahuje opinie na podstawie kodu EAN.
+
+    Args:
+        ean: Kod EAN produktu.
+
+    Returns:
+        Lista opinii na temat produktu.
+    """
+    url = f"https://www.ceneo.pl/{ean}"
+    opinie = pobierz_opinie(url)
+
+    # Iterowanie po stronach do momentu powtórzenia pierwszej strony
+    liczba_stron = 1
+    while opinie:
+        liczba_stron += 1
+        opinie.extend(pobierz_opinie(f"{url}/opinie-{liczba_stron}"))
+        if opinie == pobierz_opinie(url):
+            break
+    
+    if opinie:
+        zapisz_do_json(opinie, "opinie.json")
+        if request.form.get("zapisz_wykresy") == "True":
+            wyniki_analizy = _analiza_statystyczna(opinie)
+            if isinstance(wyniki_analizy, dict):
+                oceny = wyniki_analizy.get("średnia_ocena")
+                dystrybucja_ocen = wyniki_analizy.get("dystrybucja_ocen")
+                wyswietl_wykresy(oceny, dystrybucja_ocen)
+        return opinie
+    else:
+        return None
 
 def zapisz_do_json(opinie, nazwa_pliku):
     """
@@ -163,56 +191,6 @@ def zapisz_do_csv(opinie, nazwa_pliku):
 
             writer.writerow([id_opinii, autor, rekomendacja, gwiazdki, data, data_wystawienia, czas_od_zakupu, potwierdzony_zakup, pomocna, nie_pomocna, tresc, wady_str, zalety_str])
 
-def _analiza_statystyczna(opinie):
-    """
-    Przeprowadza analizę statystyczną pobranych opinii.
-
-    Args:
-        opinie: Lista opinii w formacie BeautifulSoup.
-
-    Returns:
-        Słownik z wynikami analizy.
-    """
-
-    # Obliczanie średniej oceny
-    oceny = [float(Fraction(re.search(r'\d+(?:[.,]\d+)?', opinia.find("span", class_="user-post__score-count").text.replace(",", ".")).group())) for opinia in opinie]
-    if len(oceny) > 0:
-        średnia_ocena = sum(oceny) / len(oceny)
-    else:
-        return "Brak ocen do analizy"
-
-    # Dystrybucja ocen
-    dystrybucja_ocen = Counter(oceny)
-
-    return {
-        "średnia_ocena": średnia_ocena,
-        "dystrybucja_ocen": dystrybucja_ocen,
-    }
-
-def wyswietl_wykresy(oceny, dystrybucja_ocen):
-    # Wykres średniej oceny
-    plt.figure(figsize=(8, 6))
-    plt.bar(["Średnia ocena"], [oceny], color='skyblue')
-    plt.title("Średnia ocena")
-    plt.ylabel("Ocena")
-    plt.ylim(0, 5)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.savefig('srednia_ocena.jpg')  # Zapisz wykres jako JPG
-    plt.close()  # Zamknij bieżący wykres
-
-    # Wykres dystrybucji ocen
-    plt.figure(figsize=(8, 6))
-    oceny = list(dystrybucja_ocen.keys())
-    ilosci = list(dystrybucja_ocen.values())
-    plt.bar(oceny, ilosci, color='lightgreen')
-    plt.title("Dystrybucja ocen")
-    plt.xlabel("Ocena")
-    plt.ylabel("Ilość opinii")
-    plt.xticks(range(1, 6))
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.savefig('dystrybucja_ocen.jpg')  # Zapisz wykres jako JPG
-    plt.close()  # Zamknij bieżący wykres
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -261,33 +239,7 @@ def filtruj_opinie(filtr, wartosc):
 
 @app.route("/wykresy", methods=['POST'])
 def wykresy():
-    # Sprawdź czy plik opinie.json istnieje
-    if not os.path.isfile("opinie.json"):
-        flash('Nie odpytano jeszcze o opinie. Najpierw wykonaj ekstrakcję opinii.', 'error')
-        return redirect(url_for('index'))
-
-    # Pobranie opinii z pliku JSON
-    with open("opinie.json", "r") as f:
-        opinie = json.load(f)
-
-    # Przeprowadzenie analizy statystycznej
-    wyniki_analizy = _analiza_statystyczna(opinie)
-
-    # Jeśli analiza zwróciła słownik, to pobierz dane do wykresów
-    if isinstance(wyniki_analizy, dict):
-        oceny = wyniki_analizy.get("średnia_ocena")
-        dystrybucja_ocen = wyniki_analizy.get("dystrybucja_ocen")
-
-        # Wygenerowanie wykresów
-        wyswietl_wykresy(oceny, dystrybucja_ocen)
-
-        # Po wygenerowaniu wykresów możesz przekierować użytkownika do strony z wykresami
-        return render_template("wykresy.html")
-
-    else:
-        # Jeśli analiza zwróciła coś innego niż słownik, zwróć odpowiedni komunikat lub obsłuż sytuację
-        flash('Błąd podczas analizy statystycznej', 'error')
-        return redirect(url_for('index'))
+    return render_template("wykresy.html")
 
 @app.route("/zapisz_do_json", methods=['POST'])
 def zapisz_do_json_view():

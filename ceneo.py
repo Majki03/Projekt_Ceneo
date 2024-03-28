@@ -22,7 +22,7 @@ def pobierz_opinie(url):
     opinie = soup.find_all("div", class_="user-post user-post__card js_product-review")
     return opinie
 
-def ekstrakcja_opinii_po_ean(ean):
+def ekstrakcja_opinii_po_ean(ean, zapisz_wykresy=False):
     """
     Ekstrahuje opinie na podstawie kodu EAN.
 
@@ -45,8 +45,15 @@ def ekstrakcja_opinii_po_ean(ean):
     
     if opinie:
         zapisz_do_json(opinie, "opinie.json")
-
-    return opinie
+        if zapisz_wykresy:
+            wyniki_analizy = _analiza_statystyczna(opinie)
+            if isinstance(wyniki_analizy, dict):
+                oceny = wyniki_analizy.get("średnia_ocena")
+                dystrybucja_ocen = wyniki_analizy.get("dystrybucja_ocen")
+                wyswietl_wykresy(oceny, dystrybucja_ocen)
+        return opinie
+    else:
+        return None
 
 def zapisz_do_json(opinie, nazwa_pliku):
     """
@@ -229,12 +236,11 @@ def _analiza_statystyczna(opinie):
 def wyswietl_wykresy(oceny, dystrybucja_ocen):
     # Wykres średniej oceny
     plt.figure(figsize=(8, 6))
-    plt.bar(["Średnia ocena"], [oceny], color='skyblue')
+    plt.pie([oceny], labels=["Średnia ocena"], colors=['skyblue'], autopct='%1.1f%%', startangle=140)
     plt.title("Średnia ocena")
-    plt.ylabel("Ocena")
-    plt.ylim(0, 5)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
+    plt.axis('equal')  # Equal aspect ratio to ensure that pie is drawn as a circle
+    plt.savefig('srednia_ocena.jpg')  # Zapisz wykres jako JPG
+    plt.close()  # Zamknij bieżący wykres
 
     # Wykres dystrybucji ocen
     plt.figure(figsize=(8, 6))
@@ -246,7 +252,8 @@ def wyswietl_wykresy(oceny, dystrybucja_ocen):
     plt.ylabel("Ilość opinii")
     plt.xticks(range(1, 6))
     plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
+    plt.savefig('dystrybucja_ocen.jpg')  # Zapisz wykres jako JPG
+    plt.close()  # Zamknij bieżący wykres
 
 class Produkt:
     def __init__(self, ean):
