@@ -5,6 +5,7 @@ import csv
 
 app = Flask(__name__, template_folder=".")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.config['STATIC_FOLDER'] = 'static'
 
 def ekstrakcja_opinii_po_ean(ean, zapisz_wykresy=False):
     """
@@ -233,7 +234,6 @@ def filtruj_opinie(filtr, wartosc):
         return [opinia for opinia in opinie if opinia['rekomendacja'].lower() == wartosc.lower()]
     elif filtr == 'liczba_gwiazdek':
         return [opinia for opinia in opinie if opinia['gwiazdki'].lower() == wartosc.lower()]
-    # Dodaj inne możliwe filtry według potrzeb
     else:
         return opinie
 

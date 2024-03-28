@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Opinie</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>Opinie</h1>
@@ -17,13 +18,15 @@
         {% endif %}
     {% endwith %}
     
-    <form action="/ekstrakcja" method="POST">
-        <input type="text" name="ean" placeholder="Podaj kod EAN">
-        <input type="hidden" name="zapisz_wykresy" value="True">
-        <button type="submit">Pobierz opinie</button>
-    </form>
-    <form action="/ekstrakcja_opinii" method="POST">
-        <button type="submit">Przejdź do opinii</button>
-    </form>
+    <div class="form-group">
+        <form action="/ekstrakcja" method="POST">
+            <input type="text" name="ean" placeholder="Podaj kod EAN">
+            <input type="hidden" name="zapisz_wykresy" value="True">
+            <button type="submit">Wyślij</button>
+        </form>
+        <form action="/ekstrakcja_opinii" method="POST">
+            <button type="submit">Przejdź do opinii</button>
+        </form>
+    </div>
 </body>
 </html>

@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <title>Strona Główna</title>
+  <meta charset="UTF-8">
+  <title>Strona Główna</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <header>
     <h1>Witaj na stronie głównej!</h1>
-    
-    <h2>Menu</h2>
+  </header>
+  <nav id="menu">
     <ul>
-        <li><a href="/ekstrakcja">Ekstrakcja opinii</a></li>
-        <li><a href="/lista_produktow">Lista produktów</a></li>
-        <li><a href="/">Strona główna</a></li>
-        <li><a href="/o_autorze">O autorze</a></li>
+      <li><a href="/ekstrakcja">Ekstrakcja opinii</a></li>
+      <li><a href="/lista_produktow">Lista produktów</a></li>
+      <li><a href="/">Strona główna</a></li>
+      <li><a href="/o_autorze">O autorze</a></li>
     </ul>
-    
+  </nav>
+  <section class="opis-projektu">
     <h2>Opis Projektu</h2>
     <p>Cel aplikacji: [opis celu aplikacji]</p>
     <p>Opis działania aplikacji: [opis działania aplikacji]</p>
     <p>Zastosowane biblioteki: [lista zastosowanych bibliotek]</p>
     <p>Zastosowane podejścia: [opis zastosowanych podejść]</p>
+  </section>
 </body>
 </html>

@@ -1,0 +1,253 @@
+/* Ustawienia globalne */
+body {
+    background-color: #212529;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  
+  /* Nagłówki */
+  h1, h2 {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  h1 {
+    font-size: 40px;
+  }
+  
+  h2 {
+    font-size: 28px;
+  }
+
+  /* Linki */
+  a {
+    color: #61dafb;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Lista menu */
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  li {
+    display: inline-block;
+    margin-right: 10px;
+  }
+  
+  /* Sekcja "Opis projektu" */
+  .opis-projektu {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #343a40;
+    border-radius: 10px;
+  }
+  
+  .opis-projektu p {
+    margin-bottom: 10px;
+  }
+
+  /* Style dla wiadomości "Flash" */
+  .alert {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px; 
+  }
+  
+  .alert-success {
+    background-color: #28a745; 
+    color: white; 
+  }
+  
+  .alert-danger {
+    background-color: #dc3545; 
+    color: white; 
+  }
+  
+  .alert-warning {
+    background-color: #ffc107; 
+    color: black; 
+  }
+  
+  /* Style pól formularzy */
+  input[type="text"], button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #343a40; /* Tło dopasowane do dark mode */
+    color: #fff; /* Kolor tekstu dla kontrastu */
+  }
+
+  input[type="text"] {
+    width: 30%;
+  }
+  
+  input[type="text"]:focus {
+    outline: none;
+    border-color: #61dafb; /* Wyróżnienie przy aktywności */
+  }
+  
+  button:hover {
+      background-color: #2c3136; /* Nieco ciemniejszy odcień przy najechaniu */
+      cursor: pointer;
+  }
+
+  .form-group {
+    margin: 10px auto;
+  }
+
+  /* Style tabeli z opiniami */
+  table {
+    margin: 20px auto; /* Wyśrodkowanie tabeli */
+    border-collapse: collapse;
+    width: 90%; /* Dostosuj szerokość w razie potrzeby */
+  }
+  
+  th, td {
+    text-align: left; /* Wyrównanie tekstu w komórkach */
+    padding: 8px;
+    border: 1px solid #ddd; 
+  }
+  
+  th {
+    background-color: #454d55; /* Kolor nagłówków tabeli */
+    color: white; 
+  }
+  
+  /* Efekty przy najechaniu na tr */
+  tr:hover {
+    background-color: #3e444c; /* Kolor podświetlenia wiersza */
+  }
+  
+  /* Styl dla komunikatu */
+  #message {
+    color: #61dafb;
+  }
+
+  /* Style tabeli z produktami */
+  table {
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 90%;
+  }
+  
+  th, td {
+    text-align: left;
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #454d55;
+    color: white;
+  }
+  
+  /* Efekty przy najechaniu na tr */
+  tr:hover {
+    background-color: #3e444c;
+  }
+  
+  /* Styl linku "Powrót do strony głównej" */
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Styl przycisków pobierania */
+  button {
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #343a40;
+    color: #fff;
+  }
+  
+  button:hover {
+    background-color: #2c3136;
+    cursor: pointer;
+  }
+
+  /* Styl strony "O autorze" */
+  h1 {
+    text-align: center;
+  }
+  
+  p {
+    margin: 20px auto;
+    width: 80%;
+    text-align: justify;
+  }
+  
+  /* Styl zdjęcia autora */
+  img {
+    display: block;
+    margin: 20px auto;
+    width: 200px;
+    border-radius: 50%;
+  }
+  
+  /* Styl listy linków */
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    width: 80%;
+    text-align: center;
+  }
+  
+  ul li {
+    display: inline-block;
+    margin: 10px;
+  }
+  
+  ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 18px;
+  }
+  
+  ul li a:hover {
+    text-decoration: underline;
+  }
+  
+  img {
+    animation: rotate 2s linear infinite;
+  }
+
+  /* Styl strony "Wykresy" */
+  h1 {
+    text-align: center;
+  }
+  
+  /* Styl wykresów */
+  img {
+    display: block;
+    margin: 20px auto;
+    width: 80%;
+  }
+  
+  /* Styl przycisku powrotu */
+  button {
+    padding: 10px 20px;
+    margin: 20px auto;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #343a40;
+    color: #fff;
+    font-size: 18px;
+  }
+  
+  button:hover {
+    background-color: #2c3136;
+    cursor: pointer;
+  }
