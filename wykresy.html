@@ -9,10 +9,10 @@
     <h1>Wykresy dotyczące produktu</h1>
 
     <!-- Wykres średniej oceny -->
-    <img src="srednia_ocena.jpg" alt="Wykres średniej oceny">
+    <img class="wykresy_zdj" src="{{ url_for('static', filename='srednia_ocena.jpg') }}" alt="Wykres średniej oceny">
 
     <!-- Wykres dystrybucji ocen -->
-    <img src="dystrybucja_ocen.jpg" alt="Wykres dystrybucji ocen">
+    <img class="wykresy_zdj" src="{{ url_for('static', filename='dystrybucja_ocen.jpg') }}" alt="Wykres dystrybucji ocen">
 
     <button onclick="window.location.href='/ekstrakcja_opinii'">Powrót do strony produktu</button>
 </body>

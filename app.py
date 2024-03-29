@@ -5,7 +5,7 @@ import csv
 
 app = Flask(__name__, template_folder=".")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-app.config['STATIC_FOLDER'] = 'static'
+#app.config['STATIC_FOLDER'] = 'static'
 
 def ekstrakcja_opinii_po_ean(ean, zapisz_wykresy=False):
     """

@@ -19,10 +19,39 @@
   </nav>
   <section class="opis-projektu">
     <h2>Opis Projektu</h2>
-    <p>Cel aplikacji: [opis celu aplikacji]</p>
-    <p>Opis działania aplikacji: [opis działania aplikacji]</p>
-    <p>Zastosowane biblioteki: [lista zastosowanych bibliotek]</p>
-    <p>Zastosowane podejścia: [opis zastosowanych podejść]</p>
+    <p><strong>Cel aplikacji:</strong></p>
+    <p>Aplikacja ma na celu ułatwienie przeglądania opinii użytkownikowi na temat różnych produktów dostępnych w serwisie Ceneo.pl. Poprzez pobieranie opinii z użyciem kodu EAN, aplikacja gromadzi informacje o id opinii, autorze, ilości gwiazdek, rekomendacji, dacie wystawienia, dacie kupienia produktu, czy opinia jest potwierdzona zakupem, treści, wadach i zaletach.</p>
+    <p><strong>Opis działania aplikacji:</strong></p>
+    <p>Po wejściu na stronę główną, użytkownik może kliknąć w link "Ekstrakcja opinii", aby przejść do strony umożliwiającej wpisanie kodu EAN produktu. Po wpisaniu kodu EAN i wysłaniu formularza, aplikacja przetwarza ten kod i pobiera opinie o danym produkcie z serwisu Ceneo.pl. Następnie użytkownik jest przenoszony na stronę, gdzie może przeglądać wszystkie pobrane opinie wraz z ich szczegółowymi informacjami. Na tej stronie użytkownik ma również możliwość zapisania danych w formatach CSV i JSON. Dodatkowo, istnieje opcja wyświetlenia wykresów na temat średniej oceny opinii oraz dystrybucji ocen poprzez kliknięcie odpowiedniego przycisku.</p>
+    <p><strong>Zastosowane biblioteki:</strong></p>
+    <ul>
+      <li>BeautifulSoup</li>
+      <li>requests</li>
+      <li>json</li>
+      <li>csv</li>
+      <li>Counter</li>
+      <li>Fraction</li>
+      <li>re</li>
+      <li>plt</li>
+      <li>Flask</li>
+    </ul>
+    <p><strong>BeautifulSoup:</strong> Biblioteka w języku Python służąca do analizy składniowej dokumentów HTML i XML. Umożliwia łatwe przeszukiwanie i manipulowanie strukturą dokumentu HTML, co jest przydatne do wyodrębniania danych ze stron internetowych.</p>
+  <br>
+  <p><strong>requests:</strong> Biblioteka requests służy do wysyłania zapytań HTTP w języku Python. Jest używana do komunikacji z serwerami internetowymi, pobierania danych z sieci oraz wysyłania danych na serwery.</p>
+  <br>
+  <p><strong>json:</strong> Biblioteka json w Pythonie służy do obsługi danych w formacie JSON (JavaScript Object Notation). Pozwala na serializację (konwersję obiektów Pythona na format JSON) oraz deserializację (konwersję danych JSON na obiekty Pythona).</p>
+  <br>
+  <p><strong>csv:</strong> Biblioteka csv w Pythonie umożliwia łatwe operowanie na plikach CSV (Comma Separated Values), co obejmuje zarówno czytanie, jak i zapisywanie danych w tym formacie.</p>
+  <br>
+  <p><strong>Counter:</strong> Klasa Counter znajduje się w module collections w Pythonie i służy do liczenia wystąpień elementów w kolekcji. Jest często używana do analizy danych, np. do zliczania wystąpień różnych wartości w liście lub zbiorze.</p>
+  <br>
+  <p><strong>Fraction:</strong> Biblioteka Fraction w Pythonie umożliwia manipulację ułamkami. Pozwala na tworzenie obiektów reprezentujących ułamki oraz wykonywanie na nich operacji arytmetycznych z zachowaniem dokładności.</p>
+  <br>
+  <p><strong>re:</strong> Moduł re w Pythonie zapewnia obsługę wyrażeń regularnych. Pozwala na przeszukiwanie i manipulację tekstowymi danymi za pomocą specjalnych wzorców określających reguły dopasowania do szukanego tekstu.</p>
+  <br>
+  <p><strong>plt:</strong> Moduł plt (zazwyczaj używany w połączeniu z matplotlib) służy do tworzenia wykresów i wizualizacji danych w języku Python. Umożliwia tworzenie różnego rodzaju wykresów, takich jak wykresy liniowe, słupkowe, punktowe, histogramy itp.</p>
+  <br>
+  <p><strong>Flask:</strong> Flask to lekki framework webowy dla języka Python. Umożliwia szybkie tworzenie aplikacji internetowych, obsługę żądań HTTP i generowanie odpowiedzi w oparciu o reguły trasowania (routing) oraz funkcje obsługi widoków.</p>
   </section>
 </body>
 </html>

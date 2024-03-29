@@ -239,7 +239,7 @@ def wyswietl_wykresy(oceny, dystrybucja_ocen):
     plt.pie([oceny], labels=["Średnia ocena"], colors=['skyblue'], autopct='%1.1f%%', startangle=140)
     plt.title("Średnia ocena")
     plt.axis('equal')  # Equal aspect ratio to ensure that pie is drawn as a circle
-    plt.savefig('srednia_ocena.jpg')  # Zapisz wykres jako JPG
+    plt.savefig('static/srednia_ocena.jpg')  # Zapisz wykres jako JPG
     plt.close()  # Zamknij bieżący wykres
 
     # Wykres dystrybucji ocen
@@ -252,7 +252,7 @@ def wyswietl_wykresy(oceny, dystrybucja_ocen):
     plt.ylabel("Ilość opinii")
     plt.xticks(range(1, 6))
     plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.savefig('dystrybucja_ocen.jpg')  # Zapisz wykres jako JPG
+    plt.savefig('static/dystrybucja_ocen.jpg')  # Zapisz wykres jako JPG
     plt.close()  # Zamknij bieżący wykres
 
 class Produkt:
